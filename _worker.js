@@ -5,7 +5,7 @@ import { connect } from 'cloudflare:sockets';
 // [Windows] Press "Win + R", input cmd and run:  Powershell -NoExit -Command "[guid]::NewGuid()"
 let userID = 'd342d11e-d424-4583-b36e-524ab1f0afa4';
 
-const proxyIPs = ['proxyip.fxxk.dedyn.io'];//'cdn.xn--b6gac.eu.org', 'cdn-all.xn--b6gac.eu.org', 'workers.bestip.one'
+const proxyIPs = ['cdn.xn--b6gac.eu.org', 'cdn-all.xn--b6gac.eu.org', 'workers.cloudflare.cyou', 'proxyip.oracle.fxxk.dedyn.io'];
 
 // if you want to use ipv6 or single proxyIP, please add comment at this line and remove comment at the next line
 let proxyIP = proxyIPs[Math.floor(Math.random() * proxyIPs.length)];
@@ -69,6 +69,12 @@ export default {
 								"Content-Type": "text/plain;charset=utf-8",
 							}
 						});
+					};
+					case `/bestip/${userID_Path}`: {
+						const headers = request.headers;
+						const url = `https://sub.xf.free.hr/auto?host=${request.headers.get('Host')}&uuid=${userID}&path=/`;
+						const bestSubConfig = await fetch(url, { headers: headers });
+						return bestSubConfig;
 					};
 					default:
 						// return new Response('Not found', { status: 404 });
@@ -698,8 +704,8 @@ function getVLESSConfig(userIDs, hostName) {
 
 	// Prepare output string for each userID
 	const output = userIDArray.map((userID) => {
-		const vlessMain = `vless://${userID}@${hostName}${commonUrlPart}`;
-		const vlessSec = `vless://${userID}@${proxyIP}${commonUrlPart}`;
+		const vlessMain = 'vless://' + userID + '@' + hostName + commonUrlPart;
+		const vlessSec = 'vless://' + userID + '@' + proxyIP + commonUrlPart;
 		return `<h2>UUID: ${userID}</h2>${hashSeparator}\nv2ray default ip
 ---------------------------------------------------------------
 ${vlessMain}
@@ -712,7 +718,7 @@ ${vlessSec}
 ---------------------------------------------------------------`;
 	}).join('\n');
 	const sublink = `https://${hostName}/sub/${userIDArray[0]}?format=clash`
-	const subbestip = `https://sub.xf.free.hr/auto?host=${hostName}&uuid=${userIDArray[0]}`;
+	const subbestip = `https://${hostName}/bestip/${userIDArray[0]}`;
 	const clash_link = `https://api.v1.mk/sub?target=clash&url=${encodeURIComponent(sublink)}&insert=false&emoji=true&list=false&tfo=false&scv=true&fdn=false&sort=false&new_name=true`;
 	// Prepare header string
 	const header = `
@@ -833,9 +839,9 @@ function createVLESSSub(userID_Path, hostName) {
 		const httpConfigurations = Array.from(portSet_http).flatMap((port) => {
 			if (!hostName.includes('pages.dev')) {
 				const urlPart = `${hostName}-HTTP-${port}`;
-				const vlessMainHttp = `vless://${userID}@${hostName}:${port}${commonUrlPart_http}${urlPart}`;
+				const vlessMainHttp = 'vless://' + userID + '@' + hostName + ':' + port + commonUrlPart_http + urlPart;
 				return proxyIPs.flatMap((proxyIP) => {
-					const vlessSecHttp = `vless://${userID}@${proxyIP}:${port}${commonUrlPart_http}${urlPart}-${proxyIP}-EDtunnel`;
+					const vlessSecHttp = 'vless://' + userID + '@' + proxyIP + ':' + port + commonUrlPart_http + urlPart + '-' + proxyIP + '-EDtunnel';
 					return [vlessMainHttp, vlessSecHttp];
 				});
 			}
@@ -844,9 +850,9 @@ function createVLESSSub(userID_Path, hostName) {
 
 		const httpsConfigurations = Array.from(portSet_https).flatMap((port) => {
 			const urlPart = `${hostName}-HTTPS-${port}`;
-			const vlessMainHttps = `vless://${userID}@${hostName}:${port}${commonUrlPart_https}${urlPart}`;
+			const vlessMainHttps = 'vless://' + userID + '@' + hostName + ':' + port + commonUrlPart_https + urlPart;
 			return proxyIPs.flatMap((proxyIP) => {
-				const vlessSecHttps = `vless://${userID}@${proxyIP}:${port}${commonUrlPart_https}${urlPart}-${proxyIP}-EDtunnel`;
+				const vlessSecHttps = 'vless://' + userID + '@' + proxyIP + ':' + port + commonUrlPart_https + urlPart + '-' + proxyIP + '-EDtunnel';
 				return [vlessMainHttps, vlessSecHttps];
 			});
 		});
@@ -858,79 +864,78 @@ function createVLESSSub(userID_Path, hostName) {
 }
 
 const cn_hostnames = [
-	//'weibo.com',                // Weibo - A popular social media platform
-	//'www.baidu.com',            // Baidu - The largest search engine in China
-	//'www.qq.com',               // QQ - A widely used instant messaging platform
-	//'www.taobao.com',           // Taobao - An e-commerce website owned by Alibaba Group
-	//'www.jd.com',               // JD.com - One of the largest online retailers in China
-	//'www.sina.com.cn',          // Sina - A Chinese online media company
-	//'www.sohu.com',             // Sohu - A Chinese internet service provider
-	//'www.tmall.com',            // Tmall - An online retail platform owned by Alibaba Group
-	//'www.163.com',              // NetEase Mail - One of the major email providers in China
-	//'www.zhihu.com',            // Zhihu - A popular question-and-answer website
-	//'www.youku.com',            // Youku - A Chinese video sharing platform
-	//'www.xinhuanet.com',        // Xinhua News Agency - Official news agency of China
-	//'www.douban.com',           // Douban - A Chinese social networking service
-	//'www.meituan.com',          // Meituan - A Chinese group buying website for local services
-	//'www.toutiao.com',          // Toutiao - A news and information content platform
-	//'www.ifeng.com',            // iFeng - A popular news website in China
-	//'www.autohome.com.cn',      // Autohome - A leading Chinese automobile online platform
-	//'www.360.cn',               // 360 - A Chinese internet security company
-	//'www.douyin.com',           // Douyin - A Chinese short video platform
-	//'www.kuaidi100.com',        // Kuaidi100 - A Chinese express delivery tracking service
-	//'www.wechat.com',           // WeChat - A popular messaging and social media app
-	//'www.csdn.net',             // CSDN - A Chinese technology community website
-	//'www.imgo.tv',              // ImgoTV - A Chinese live streaming platform
-	//'www.aliyun.com',           // Alibaba Cloud - A Chinese cloud computing company
-	//'www.eyny.com',             // Eyny - A Chinese multimedia resource-sharing website
-	//'www.mgtv.com',             // MGTV - A Chinese online video platform
-	//'www.xunlei.com',           // Xunlei - A Chinese download manager and torrent client
-	//'www.hao123.com',           // Hao123 - A Chinese web directory service
-	//'www.bilibili.com',         // Bilibili - A Chinese video sharing and streaming platform
-	//'www.youth.cn',             // Youth.cn - A China Youth Daily news portal
-	//'www.hupu.com',             // Hupu - A Chinese sports community and forum
-	//'www.youzu.com',            // Youzu Interactive - A Chinese game developer and publisher
-	//'www.panda.tv',             // Panda TV - A Chinese live streaming platform
-	//'www.tudou.com',            // Tudou - A Chinese video-sharing website
-	//'www.zol.com.cn',           // ZOL - A Chinese electronics and gadgets website
-	//'www.toutiao.io',           // Toutiao - A news and information app
-	//'www.tiktok.com',           // TikTok - A Chinese short-form video app
-	//'www.netease.com',          // NetEase - A Chinese internet technology company
-	//'www.cnki.net',             // CNKI - China National Knowledge Infrastructure, an information aggregator
-	//'www.zhibo8.cc',            // Zhibo8 - A website providing live sports streams
-	//'www.zhangzishi.cc',        // Zhangzishi - Personal website of Zhang Zishi, a public intellectual in China
-	//'www.xueqiu.com',           // Xueqiu - A Chinese online social platform for investors and traders
-	//'www.qqgongyi.com',         // QQ Gongyi - Tencent's charitable foundation platform
-	//'www.ximalaya.com',         // Ximalaya - A Chinese online audio platform
-	//'www.dianping.com',         // Dianping - A Chinese online platform for finding and reviewing local businesses
-	//'www.suning.com',           // Suning - A leading Chinese online retailer
-	//'www.zhaopin.com',          // Zhaopin - A Chinese job recruitment platform
-	//'www.jianshu.com',          // Jianshu - A Chinese online writing platform
-	//'www.mafengwo.cn',          // Mafengwo - A Chinese travel information sharing platform
-	//'www.51cto.com',            // 51CTO - A Chinese IT technical community website
-	//'www.qidian.com',           // Qidian - A Chinese web novel platform
-	//'www.ctrip.com',            // Ctrip - A Chinese travel services provider
-	//'www.pconline.com.cn',      // PConline - A Chinese technology news and review website
-	//'www.cnzz.com',             // CNZZ - A Chinese web analytics service provider
-	//'www.telegraph.co.uk',      // The Telegraph - A British newspaper website	
-	//'www.ynet.com',             // Ynet - A Chinese news portal
-	//'www.ted.com',              // TED - A platform for ideas worth spreading
-	//'www.renren.com',           // Renren - A Chinese social networking service
-	//'www.pptv.com',             // PPTV - A Chinese online video streaming platform
-	//'www.liepin.com',           // Liepin - A Chinese online recruitment website
-	//'www.881903.com',           // 881903 - A Hong Kong radio station website
-	//'www.aipai.com',            // Aipai - A Chinese online video sharing platform
-	//'www.ttpaihang.com',        // Ttpaihang - A Chinese celebrity popularity ranking website
-	//'www.quyaoya.com',          // Quyaoya - A Chinese online ticketing platform
-	//'www.91.com',               // 91.com - A Chinese software download website
-	//'www.dianyou.cn',           // Dianyou - A Chinese game information website
-	//'www.tmtpost.com',          // TMTPost - A Chinese technology media platform
-	////'www.douban.com',           // Douban - A Chinese social networking service
-	//'www.guancha.cn',           // Guancha - A Chinese news and commentary website
-	//'www.so.com',               // So.com - A Chinese search engine
-	//'www.58.com',               // 58.com - A Chinese classified advertising website
-	//'www.cnblogs.com',          // Cnblogs - A Chinese technology blog community
-	//'www.cntv.cn',              // CCTV - China Central Television official website
-	//'www.secoo.com',            // Secoo - A Chinese luxury e-commerce platform
-	'www.bing.com',
+	'weibo.com',                // Weibo - A popular social media platform
+	'www.baidu.com',            // Baidu - The largest search engine in China
+	'www.qq.com',               // QQ - A widely used instant messaging platform
+	'www.taobao.com',           // Taobao - An e-commerce website owned by Alibaba Group
+	'www.jd.com',               // JD.com - One of the largest online retailers in China
+	'www.sina.com.cn',          // Sina - A Chinese online media company
+	'www.sohu.com',             // Sohu - A Chinese internet service provider
+	'www.tmall.com',            // Tmall - An online retail platform owned by Alibaba Group
+	'www.163.com',              // NetEase Mail - One of the major email providers in China
+	'www.zhihu.com',            // Zhihu - A popular question-and-answer website
+	'www.youku.com',            // Youku - A Chinese video sharing platform
+	'www.xinhuanet.com',        // Xinhua News Agency - Official news agency of China
+	'www.douban.com',           // Douban - A Chinese social networking service
+	'www.meituan.com',          // Meituan - A Chinese group buying website for local services
+	'www.toutiao.com',          // Toutiao - A news and information content platform
+	'www.ifeng.com',            // iFeng - A popular news website in China
+	'www.autohome.com.cn',      // Autohome - A leading Chinese automobile online platform
+	'www.360.cn',               // 360 - A Chinese internet security company
+	'www.douyin.com',           // Douyin - A Chinese short video platform
+	'www.kuaidi100.com',        // Kuaidi100 - A Chinese express delivery tracking service
+	'www.wechat.com',           // WeChat - A popular messaging and social media app
+	'www.csdn.net',             // CSDN - A Chinese technology community website
+	'www.imgo.tv',              // ImgoTV - A Chinese live streaming platform
+	'www.aliyun.com',           // Alibaba Cloud - A Chinese cloud computing company
+	'www.eyny.com',             // Eyny - A Chinese multimedia resource-sharing website
+	'www.mgtv.com',             // MGTV - A Chinese online video platform
+	'www.xunlei.com',           // Xunlei - A Chinese download manager and torrent client
+	'www.hao123.com',           // Hao123 - A Chinese web directory service
+	'www.bilibili.com',         // Bilibili - A Chinese video sharing and streaming platform
+	'www.youth.cn',             // Youth.cn - A China Youth Daily news portal
+	'www.hupu.com',             // Hupu - A Chinese sports community and forum
+	'www.youzu.com',            // Youzu Interactive - A Chinese game developer and publisher
+	'www.panda.tv',             // Panda TV - A Chinese live streaming platform
+	'www.tudou.com',            // Tudou - A Chinese video-sharing website
+	'www.zol.com.cn',           // ZOL - A Chinese electronics and gadgets website
+	'www.toutiao.io',           // Toutiao - A news and information app
+	'www.tiktok.com',           // TikTok - A Chinese short-form video app
+	'www.netease.com',          // NetEase - A Chinese internet technology company
+	'www.cnki.net',             // CNKI - China National Knowledge Infrastructure, an information aggregator
+	'www.zhibo8.cc',            // Zhibo8 - A website providing live sports streams
+	'www.zhangzishi.cc',        // Zhangzishi - Personal website of Zhang Zishi, a public intellectual in China
+	'www.xueqiu.com',           // Xueqiu - A Chinese online social platform for investors and traders
+	'www.qqgongyi.com',         // QQ Gongyi - Tencent's charitable foundation platform
+	'www.ximalaya.com',         // Ximalaya - A Chinese online audio platform
+	'www.dianping.com',         // Dianping - A Chinese online platform for finding and reviewing local businesses
+	'www.suning.com',           // Suning - A leading Chinese online retailer
+	'www.zhaopin.com',          // Zhaopin - A Chinese job recruitment platform
+	'www.jianshu.com',          // Jianshu - A Chinese online writing platform
+	'www.mafengwo.cn',          // Mafengwo - A Chinese travel information sharing platform
+	'www.51cto.com',            // 51CTO - A Chinese IT technical community website
+	'www.qidian.com',           // Qidian - A Chinese web novel platform
+	'www.ctrip.com',            // Ctrip - A Chinese travel services provider
+	'www.pconline.com.cn',      // PConline - A Chinese technology news and review website
+	'www.cnzz.com',             // CNZZ - A Chinese web analytics service provider
+	'www.telegraph.co.uk',      // The Telegraph - A British newspaper website	
+	'www.ynet.com',             // Ynet - A Chinese news portal
+	'www.ted.com',              // TED - A platform for ideas worth spreading
+	'www.renren.com',           // Renren - A Chinese social networking service
+	'www.pptv.com',             // PPTV - A Chinese online video streaming platform
+	'www.liepin.com',           // Liepin - A Chinese online recruitment website
+	'www.881903.com',           // 881903 - A Hong Kong radio station website
+	'www.aipai.com',            // Aipai - A Chinese online video sharing platform
+	'www.ttpaihang.com',        // Ttpaihang - A Chinese celebrity popularity ranking website
+	'www.quyaoya.com',          // Quyaoya - A Chinese online ticketing platform
+	'www.91.com',               // 91.com - A Chinese software download website
+	'www.dianyou.cn',           // Dianyou - A Chinese game information website
+	'www.tmtpost.com',          // TMTPost - A Chinese technology media platform
+	'www.douban.com',           // Douban - A Chinese social networking service
+	'www.guancha.cn',           // Guancha - A Chinese news and commentary website
+	'www.so.com',               // So.com - A Chinese search engine
+	'www.58.com',               // 58.com - A Chinese classified advertising website
+	'www.cnblogs.com',          // Cnblogs - A Chinese technology blog community
+	'www.cntv.cn',              // CCTV - China Central Television official website
+	'www.secoo.com',            // Secoo - A Chinese luxury e-commerce platform
 ];
